@@ -2,7 +2,7 @@ import Geolocation from '@react-native-community/geolocation';
 import {useEffect, useMemo, useState} from 'react';
 import {LatLng} from 'react-native-maps/lib/sharedTypes';
 
-export const useStoresPosition = () => {
+export const usePosition = () => {
   const [currentPosition, setCurrentPosition] = useState<LatLng | undefined>();
   const [authorized, setAuthorized] = useState(false);
 
