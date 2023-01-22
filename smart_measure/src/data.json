@@ -1,0 +1,66 @@
+[
+    {
+        "id":1,
+        "latitude": 52.4959962,
+        "longitude": 13.358209,
+        "latency": "xx",
+        "quality": 1,
+        "jitter": "xx"
+    },
+    {
+        "id":2,
+        "latitude": 52.4959662,
+        "longitude": 13.358209,
+        "latency": "xx",
+        "quality": 3,
+        "jitter": "xx"
+    },
+    {
+        "id":3,
+        "latitude": 52.4959162,
+        "longitude": 13.358209,
+        "latency": "xx",
+        "quality": 1,
+        "jitter": "xx"
+    },
+    {
+        "id":4,
+        "latitude": 52.4959362,
+        "longitude": 13.358299,
+        "latency": "xx",
+        "quality": 1,
+        "jitter": "xx"
+    },
+    {
+        "id":5,
+        "latitude": 52.4959562,
+        "longitude": 13.358239,
+        "latency": "xx",
+        "quality": 3,
+        "jitter": "xx"
+    },
+    {
+        "id":6,
+        "latitude": 52.4959462,
+        "longitude": 13.358249,
+        "latency": "xx",
+        "quality": 2,
+        "jitter": "xx"
+    },
+    {
+        "id":7,
+        "latitude": 52.4959563,
+        "longitude": 13.358209,
+        "latency": "xx",
+        "quality": 2,
+        "jitter": "xx"
+    },
+    {
+        "id":8,
+        "latitude": 52.4959762,
+        "longitude": 13.358279,
+        "latency": "xx",
+        "quality": 3,
+        "jitter": "xx"
+    }
+]
