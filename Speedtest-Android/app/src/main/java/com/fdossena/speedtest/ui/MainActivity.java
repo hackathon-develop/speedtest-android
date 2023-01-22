@@ -1,10 +1,15 @@
 package com.fdossena.speedtest.ui;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,18 +34,34 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import okhttp3.Call;
+import okhttp3.Credentials;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import r1.hack.speedtest.R;
 
 public class MainActivity extends Activity {
     static final String TAG = "main-location";
+    static OkHttpClient client = new OkHttpClient();
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
     private FusedLocationProviderClient fusedLocationClient;
     private static Location mainLocation;
     @Override
@@ -268,6 +289,7 @@ public class MainActivity extends Activity {
         });
     }
 
+    @SuppressLint("MissingPermission")
     private void page_test(final TestPoint selected) {
         transition(R.id.page_test, TRANSITION_LENGTH);
         st.setSelectedServer(selected);
@@ -381,6 +403,75 @@ public class MainActivity extends Activity {
 
             @Override
             public void onEnd() {
+                CharSequence ping = ((TextView) findViewById(R.id.pingText)).getText();
+                CharSequence jitter = ((TextView) findViewById(R.id.jitterText)).getText();
+                CharSequence upload = ((TextView) findViewById(R.id.ulText)).getText();
+                CharSequence download = ((TextView) findViewById(R.id.dlText)).getText();
+
+                //LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                //Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                String longitude = String.valueOf(mainLocation.getLongitude());
+                String latitude = String.valueOf(mainLocation.getLatitude());
+
+                JSONObject data = new JSONObject();
+                try {
+                    data.put("time", new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss", Locale.GERMANY).format(new java.util.Date()));
+                    data.put("latency", ping);
+                    data.put("jitter", jitter);
+                    data.put("upload", upload);
+                    data.put("download", download);
+                    data.put("long", longitude);
+                    data.put("lat", latitude);
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+                System.out.println("Testrun finished!");
+                System.out.println("Data: " + data);
+
+
+                String urlInsert = "https://data.mongodb-api.com/app/data-vdlqg/endpoint/data/v1/action/insertOne";
+                String urlFind = "https://data.mongodb-api.com/app/data-vdlqg/endpoint/data/v1/action/find";
+                String apiKey = "dSjitvFRGm0ELDad4iAsJTdy5RMQknQhLl1X4Q4qX87Mjmmo4Wz0LvZlV58xnifC";
+
+                String jsonFind = "{\n" +
+                        "    \"collection\":\"measure\",\n" +
+                        "    \"database\":\"qos\",\n" +
+                        "    \"dataSource\":\"Cluster0\",\n" +
+                        "    \"filter\": {}\n" +
+                        "}";
+
+                String jsonInsert = "{\n" +
+                        "    \"collection\":\"measure\",\n" +
+                        "    \"database\":\"qos\",\n" +
+                        "    \"dataSource\":\"Cluster0\",\n" +
+                        "     \"document\": {\n" +
+                        "        \"data\": " + data + "\n" +
+                        "        }\n" +
+                        "      }\n";
+
+                RequestBody body = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                    body = RequestBody.create(jsonInsert.getBytes(StandardCharsets.UTF_8));
+                }
+
+                Request request = new Request.Builder().get().url(urlInsert)
+                        .addHeader("content-type", "application/json") // content type.
+                        .addHeader("api-key", apiKey) // the Atlas api token.
+                        .post(body) // Do a POST request with the given contents.
+                        .build(); // build the Request.
+
+                Call call = client.newCall(request);
+                try {
+                    Response response = call.execute();
+                    System.out.println("Response: " + response);
+                    System.out.println(response.body().string());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

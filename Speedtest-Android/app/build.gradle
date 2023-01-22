@@ -39,4 +39,5 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.google.android.gms:play-services-location:21.0.1'
     implementation 'androidx.databinding:databinding-compiler-common:7.1.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.5.0'
 }
