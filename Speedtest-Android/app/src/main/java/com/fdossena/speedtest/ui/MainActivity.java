@@ -1,5 +1,7 @@
 package com.fdossena.speedtest.ui;
 
+import static com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -25,13 +27,17 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.fdossena.speedtest.core.Speedtest;
 import com.fdossena.speedtest.core.config.SpeedtestConfig;
 import com.fdossena.speedtest.core.config.TelemetryConfig;
 import com.fdossena.speedtest.core.serverSelector.TestPoint;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnTokenCanceledListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -321,7 +327,25 @@ public class MainActivity extends Activity {
         endTestArea.setLayoutParams(p);
         findViewById(R.id.shareButton).setVisibility(View.GONE);
 
-        fusedLocationClient.getLastLocation()
+
+        FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationProviderClient.getCurrentLocation(PRIORITY_HIGH_ACCURACY, new CancellationToken() {
+            @Override
+            public boolean isCancellationRequested() {
+                return false;
+            }
+
+            @NonNull
+            @Override
+            public CancellationToken onCanceledRequested(@NonNull OnTokenCanceledListener onTokenCanceledListener) {
+                return null;
+            }
+        }).addOnSuccessListener(location -> {
+            mainLocation = location;
+            // use this current location
+        });
+
+/*        fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
@@ -332,7 +356,8 @@ public class MainActivity extends Activity {
                             mainLocation = location;
                         }
                     }
-                });
+                });*/
+
         st.start(new Speedtest.SpeedtestHandler() {
             @Override
             public void onDownloadUpdate(final double dl, final double progress) {
