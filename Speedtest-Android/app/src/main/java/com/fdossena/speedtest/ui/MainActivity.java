@@ -408,10 +408,12 @@ public class MainActivity extends Activity {
                 CharSequence upload = ((TextView) findViewById(R.id.ulText)).getText();
                 CharSequence download = ((TextView) findViewById(R.id.dlText)).getText();
 
-                //LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                //Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                String longitude = String.valueOf(mainLocation.getLongitude());
-                String latitude = String.valueOf(mainLocation.getLatitude());
+                String longitude = "-1";
+                String latitude = "-1";
+                if (mainLocation != null) {
+                    longitude = String.valueOf(mainLocation.getLongitude());
+                    latitude = String.valueOf(mainLocation.getLatitude());
+                }
 
                 JSONObject data = new JSONObject();
                 try {
@@ -422,6 +424,8 @@ public class MainActivity extends Activity {
                     data.put("download", download);
                     data.put("long", longitude);
                     data.put("lat", latitude);
+                    data.put("quality", 2);
+
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
