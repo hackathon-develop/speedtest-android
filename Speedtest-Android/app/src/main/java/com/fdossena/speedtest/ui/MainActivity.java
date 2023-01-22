@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
 
     private FusedLocationProviderClient fusedLocationClient;
     private static Location mainLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -327,7 +328,7 @@ public class MainActivity extends Activity {
                         Log.v(TAG, "onSuccess");
                         if (location != null) {
                             Log.v(TAG, "lat:" + String.valueOf(location.getLatitude()));
-                            Log.v(TAG, "lon:" +String.valueOf(location.getLongitude()));
+                            Log.v(TAG, "lon:" + String.valueOf(location.getLongitude()));
                             mainLocation = location;
                         }
                     }
@@ -413,68 +414,66 @@ public class MainActivity extends Activity {
                 if (mainLocation != null) {
                     longitude = String.valueOf(mainLocation.getLongitude());
                     latitude = String.valueOf(mainLocation.getLatitude());
+
+                    JSONObject data = new JSONObject();
+                    try {
+                        data.put("time", new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss", Locale.GERMANY).format(new java.util.Date()));
+                        data.put("latency", ping);
+                        data.put("jitter", jitter);
+                        data.put("upload", upload);
+                        data.put("download", download);
+                        data.put("long", longitude);
+                        data.put("lat", latitude);
+                        data.put("quality", 2);
+
+                    } catch (JSONException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    System.out.println("Testrun finished!");
+                    System.out.println("Data: " + data);
+
+
+                    String urlInsert = "https://data.mongodb-api.com/app/data-vdlqg/endpoint/data/v1/action/insertOne";
+                    String urlFind = "https://data.mongodb-api.com/app/data-vdlqg/endpoint/data/v1/action/find";
+                    String apiKey = "dSjitvFRGm0ELDad4iAsJTdy5RMQknQhLl1X4Q4qX87Mjmmo4Wz0LvZlV58xnifC";
+
+                    String jsonFind = "{\n" +
+                            "    \"collection\":\"measure\",\n" +
+                            "    \"database\":\"qos\",\n" +
+                            "    \"dataSource\":\"Cluster0\",\n" +
+                            "    \"filter\": {}\n" +
+                            "}";
+
+                    String jsonInsert = "{\n" +
+                            "    \"collection\":\"measure\",\n" +
+                            "    \"database\":\"qos\",\n" +
+                            "    \"dataSource\":\"Cluster0\",\n" +
+                            "     \"document\": {\n" +
+                            "        \"data\": " + data + "\n" +
+                            "        }\n" +
+                            "      }\n";
+
+                    RequestBody body = null;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                        body = RequestBody.create(jsonInsert.getBytes(StandardCharsets.UTF_8));
+                    }
+
+                    Request request = new Request.Builder().get().url(urlInsert)
+                            .addHeader("content-type", "application/json") // content type.
+                            .addHeader("api-key", apiKey) // the Atlas api token.
+                            .post(body) // Do a POST request with the given contents.
+                            .build(); // build the Request.
+
+                    Call call = client.newCall(request);
+                    try {
+                        Response response = call.execute();
+                        System.out.println("Response: " + response);
+                        System.out.println(response.body().string());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-
-                JSONObject data = new JSONObject();
-                try {
-                    data.put("time", new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss", Locale.GERMANY).format(new java.util.Date()));
-                    data.put("latency", ping);
-                    data.put("jitter", jitter);
-                    data.put("upload", upload);
-                    data.put("download", download);
-                    data.put("long", longitude);
-                    data.put("lat", latitude);
-                    data.put("quality", 2);
-
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
-                System.out.println("Testrun finished!");
-                System.out.println("Data: " + data);
-
-
-                String urlInsert = "https://data.mongodb-api.com/app/data-vdlqg/endpoint/data/v1/action/insertOne";
-                String urlFind = "https://data.mongodb-api.com/app/data-vdlqg/endpoint/data/v1/action/find";
-                String apiKey = "dSjitvFRGm0ELDad4iAsJTdy5RMQknQhLl1X4Q4qX87Mjmmo4Wz0LvZlV58xnifC";
-
-                String jsonFind = "{\n" +
-                        "    \"collection\":\"measure\",\n" +
-                        "    \"database\":\"qos\",\n" +
-                        "    \"dataSource\":\"Cluster0\",\n" +
-                        "    \"filter\": {}\n" +
-                        "}";
-
-                String jsonInsert = "{\n" +
-                        "    \"collection\":\"measure\",\n" +
-                        "    \"database\":\"qos\",\n" +
-                        "    \"dataSource\":\"Cluster0\",\n" +
-                        "     \"document\": {\n" +
-                        "        \"data\": " + data + "\n" +
-                        "        }\n" +
-                        "      }\n";
-
-                RequestBody body = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                    body = RequestBody.create(jsonInsert.getBytes(StandardCharsets.UTF_8));
-                }
-
-                Request request = new Request.Builder().get().url(urlInsert)
-                        .addHeader("content-type", "application/json") // content type.
-                        .addHeader("api-key", apiKey) // the Atlas api token.
-                        .post(body) // Do a POST request with the given contents.
-                        .build(); // build the Request.
-
-                Call call = client.newCall(request);
-                try {
-                    Response response = call.execute();
-                    System.out.println("Response: " + response);
-                    System.out.println(response.body().string());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
 
                 runOnUiThread(new Runnable() {
                     @Override
