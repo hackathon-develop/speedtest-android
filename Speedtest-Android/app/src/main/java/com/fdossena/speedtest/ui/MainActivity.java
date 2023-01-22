@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -22,6 +24,9 @@ import com.fdossena.speedtest.core.Speedtest;
 import com.fdossena.speedtest.core.config.SpeedtestConfig;
 import com.fdossena.speedtest.core.config.TelemetryConfig;
 import com.fdossena.speedtest.core.serverSelector.TestPoint;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,13 +37,17 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import your.name.here.speedtest.R;
+import r1.hack.speedtest.R;
 
 public class MainActivity extends Activity {
-
+    static final String TAG="main-location";
+    private FusedLocationProviderClient fusedLocationClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
         setContentView(R.layout.activity_main);
         transition(R.id.page_splash,0);
         new Thread(){
@@ -280,6 +289,18 @@ public class MainActivity extends Activity {
         p.height=0;
         endTestArea.setLayoutParams(p);
         findViewById(R.id.shareButton).setVisibility(View.GONE);
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            Log.v(TAG, String.valueOf(location));
+                        }
+                    }
+                });
+
         st.start(new Speedtest.SpeedtestHandler() {
             @Override
             public void onDownloadUpdate(final double dl, final double progress) {
